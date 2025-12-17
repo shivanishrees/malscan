@@ -207,3 +207,9 @@ marimo/_lsp/
 __marimo__/
 
 .history/
+venv/
+__pycache__/
+uploads/
+quarantine/
+reconstructed/
+*.pyc
