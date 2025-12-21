@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0",
+  "modules": {
+    "static_analysis": {
+      "weight": 0.35,
+      "critical": true,
+      "timeout_ms": 30000,
+      "enabled": true
+    },
+    "threat_intelligence": {
+      "weight": 0.40,
+      "critical": true,
+      "timeout_ms": 15000,
+      "enabled": true
+    },
+    "behavioral_analysis": {
+      "weight": 0.25,
+      "critical": false,
+      "timeout_ms": 45000,
+      "enabled": true
+    }
+  },
+  "thresholds": {
+    "safe_max": 30,
+    "suspicious_min": 31,
+    "suspicious_max": 60,
+    "malicious_min": 61
+  },
+  "confidence": {
+    "minimum_required": 0.3,
+    "critical_module_penalty": 0.2,
+    "non_critical_module_penalty": 0.05
+  },
+  "storage": {
+    "analysis_ttl_ms": 3600000,
+    "cleanup_interval_ms": 900000,
+    "json_retention_hours": 24
+  }
+}
