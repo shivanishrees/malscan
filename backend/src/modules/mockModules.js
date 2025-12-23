@@ -1,66 +1,11 @@
 import { AnalysisModule } from './moduleInterface.js';
+import { StaticFileAnalysis } from "./static_file_analysis/staticAnalysis.js";
 
 /**
  * Mock Static Analysis Module
  * Simulates file structure and entropy analysis
  */
-export class MockStaticAnalysis extends AnalysisModule {
-  constructor() {
-    super('static_analysis');
-  }
 
-  async execute(input) {
-    if (!this.validateInput(input)) {
-      return this.createOutput('FAILED', null, 0, [], null, 'Invalid input');
-    }
-
-    // Simulate processing delay
-    await this.delay(1000);
-
-    // Mock analysis based on file characteristics
-    const { file_name, file_size, file_type } = input;
-    
-    let riskScore = 10; // Base safe score
-    const flags = [];
-
-    // Check file extension mismatches
-    if (file_name.includes('.exe') || file_name.includes('.bat')) {
-      riskScore += 30;
-      flags.push('executable_file');
-    }
-
-    // Check for double extensions
-    if ((file_name.match(/\./g) || []).length > 1) {
-      riskScore += 20;
-      flags.push('double_extension');
-    }
-
-    // Check file size (very small or very large)
-    if (file_size < 1024) {
-      riskScore += 10;
-      flags.push('suspicious_file_size');
-    }
-
-    // Simulate entropy check
-    const entropy = Math.random();
-    if (entropy > 0.7) {
-      riskScore += 25;
-      flags.push('high_entropy');
-    }
-
-    return this.createOutput(
-      'COMPLETED',
-      Math.min(riskScore, 100),
-      0.85,
-      flags,
-      { entropy: entropy.toFixed(2), analyzed_sections: 5 }
-    );
-  }
-
-  delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-  }
-}
 
 /**
  * Mock Threat Intelligence Module
@@ -196,7 +141,7 @@ export class MockBehavioralAnalysis extends AnalysisModule {
  * Register all mock modules
  */
 export function registerMockModules(registry) {
-  registry.register('static_analysis', new MockStaticAnalysis());
+registry.register('static_analysis', new StaticFileAnalysis());
   registry.register('threat_intelligence', new MockThreatIntelligence());
   registry.register('behavioral_analysis', new MockBehavioralAnalysis());
   console.log('All mock modules registered');
