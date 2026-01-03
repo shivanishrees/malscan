@@ -1,17 +1,25 @@
-import fitz  # PyMuPDF
+import pikepdf
 
-def sanitize_pdf(source, dest):
-    doc = fitz.open(source)
-    clean = fitz.open()
+def sanitize_pdf(input_path, output_path):
+    with pikepdf.open(input_path, allow_overwriting_input=True) as pdf:
 
-    for p in doc:
-        new = clean.new_page(width=p.rect.width, height=p.rect.height)
-        new.show_pdf_page(
-            new.rect,
-            doc,
-            p.number
-        )
+        root = pdf.Root
 
-    clean.save(dest)
-    clean.close()
-    doc.close()
+        # Remove JavaScript actions safely
+        for key in ["/OpenAction", "/AA"]:
+            if key in root:
+                del root[key]
+
+        # Remove AcroForm (common JS carrier)
+        if "/AcroForm" in root:
+            del root["/AcroForm"]
+
+        # DO NOT delete /Names blindly
+        # Instead remove JS from Names tree
+        if "/Names" in root:
+            names = root["/Names"]
+            if "/JavaScript" in names:
+                del names["/JavaScript"]
+
+        # Save with linearization OFF (important)
+        pdf.save(output_path, linearize=False)

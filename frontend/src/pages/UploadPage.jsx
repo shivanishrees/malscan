@@ -6,33 +6,56 @@ export default function UploadPage() {
   const [file, setFile] = useState(null);
   const navigate = useNavigate();
 
-  const handleScan = () => {
-    if (!file) {
-      alert("Please upload a file");
-      return;
-    }
+ const handleScan = async () => {
+  if (!file) {
+    alert("Please upload a file");
+    return;
+  }
 
-    const scanResult = {
-      fileName: file.name,
-      riskScore: 78,
-      status: "Suspicious",
-      reasons: [
-        "Executable disguised as document",
-        "Double extension detected",
-        "Unknown community reputation",
-      ],
-      impacts: [
-        "May steal credentials",
-        "May download additional malware",
-      ],
-      sha256:
-        "9a4b16beb818c26f8433838614c9d80da29c90c3cf9cf4fc48148c91a520kce3d126b9",
-      size: "1.2 MB",
-      source: "Download",
-    };
+  const formData = new FormData();
+  formData.append("file", file);
 
-    navigate("/result", { state: scanResult });
-  };
+  try {
+    // Call FastAPI reconstruction
+    const response = await fetch("http://127.0.0.1:8000/reconstruct", {
+  method: "POST",
+  body: formData,
+});
+
+if (!response.ok) {
+  const text = await response.text();
+  console.error(text);
+  alert("Backend error during reconstruction");
+  return;
+}
+
+const result = await response.json();
+
+
+    navigate("/result", {
+      state: {
+        fileName: file.name,
+        sha256: result.hash,
+        safeFile: result.safe_file,
+        riskScore: 78,
+        status: "Suspicious",
+        reasons: [
+          "Macro content detected",
+          "Sanitized during reconstruction",
+        ],
+        impacts: [
+          "Malicious content removed",
+        ],
+        size: `${(file.size / 1024).toFixed(2)} KB`,
+        source: "User Upload",
+      },
+    });
+
+  } catch (err) {
+    console.error(err);
+    alert("Reconstruction failed");
+  }
+};
 
   return (
     <div

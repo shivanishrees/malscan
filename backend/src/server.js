@@ -2,11 +2,15 @@ import express from "express";
 import cors from "cors";
 import multer from "multer";
 import crypto from "crypto";
+import axios from "axios";
+import FormData from "form-data";
 
 import orchestrator from "./core/orchestrator.js";
 import analysisStore from "./storage/analysisStore.js";
 import { moduleRegistry } from "./modules/moduleInterface.js";
 import { registerMockModules } from "./modules/mockModules.js";
+import reconstructionEngine from "./modules/static_file_analysis/reconstruction.js";
+
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -25,6 +29,28 @@ app.use((req, res, next) => {
 // Memory-based upload (secure, no execution, no disk write)
 const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 } // 10 MB
+});
+
+app.post("/api/reconstruct", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: "No file uploaded" });
+    }
+
+    const result = await reconstructionEngine.process(req.file);
+
+    res.status(200).json({
+      success: true,
+      result
+    });
+
+  } catch (err) {
+    console.error("Reconstruction error:", err);
+    res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
 });
 
 /* -------------------- FILE UPLOAD + SHA -------------------- */

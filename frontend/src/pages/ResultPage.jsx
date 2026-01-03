@@ -14,16 +14,32 @@ export default function ResultPage() {
     );
   }
 
-  const handleReconstruct = () => {
-    const blob = new Blob(
-      ["This is a reconstructed safe file"],
-      { type: "text/plain" }
+  const handleReconstruct = async () => {
+  try {
+    const response = await fetch(
+      `http://127.0.0.1:8000/reconstructed/${data.safeFile}`
     );
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch file");
+    }
+
+    const blob = await response.blob();
+    const url = window.URL.createObjectURL(blob);
+
     const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "safe_file.txt";
+    link.href = url;
+    link.download = data.safeFile;
+    document.body.appendChild(link);
     link.click();
-  };
+    link.remove();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to download reconstructed file");
+  }
+};
+
+
 
   return (
     <div
